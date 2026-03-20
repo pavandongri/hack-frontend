@@ -19,3 +19,15 @@ export type LocationOption = {
 };
 
 export type Coordinates = [number, number];
+
+export type RouteType = {
+  geometry: {
+    coordinates: [number, number][];
+  };
+  distance: number;
+  duration: number;
+  legs: {
+    steps: any[];
+    annotation?: any;
+  }[];
+};

@@ -1,16 +1,16 @@
 "use client";
 
 import { getRoute } from "@/helpers/route.helpers";
-import { LeafMapProps } from "@/types/common.types";
+import { LeafMapProps, RouteType } from "@/types/common.types";
+import { Box } from "@mui/material";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
-import { MapContainer, Marker, Polyline, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Marker, Polyline, TileLayer, Tooltip, useMap } from "react-leaflet";
 import "./leafletFix";
 
-// 📍 Default fallback (Hyderabad)
 const DEFAULT_CENTER: [number, number] = [17.385044, 78.486671];
+const colors = ["#007AFF", "#A020F0", "#61f2a0ff"];
 
-// 🔁 Recenter map when start changes
 const RecenterMap = ({ center }: { center: [number, number] }) => {
   const map = useMap();
 
@@ -22,9 +22,9 @@ const RecenterMap = ({ center }: { center: [number, number] }) => {
 };
 
 const LeafletMap = ({ start, end, setRouteLoading }: LeafMapProps) => {
-  const [routes, setRoutes] = useState<[number, number][][]>([]);
+  const [routes, setRoutes] = useState<RouteType[]>([]);
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
 
-  // 🛣️ Fetch route ONLY when both start & end exist
   useEffect(() => {
     const fetchRoute = async () => {
       if (!start || !end) {
@@ -34,20 +34,14 @@ const LeafletMap = ({ start, end, setRouteLoading }: LeafMapProps) => {
 
       try {
         setRouteLoading(true);
+
         const routeData = await getRoute(start, end);
 
-        // take top 3 routes
-        const topRoutes = routeData
-          ?.slice(0, 3)
-          ?.map((route: any) =>
-            route.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]])
-          );
-
-        setRoutes(topRoutes);
-        setRouteLoading(false);
+        setRoutes(routeData?.slice(0, 3) || []);
       } catch (err) {
         console.error("Route error:", err);
         setRoutes([]);
+      } finally {
         setRouteLoading(false);
       }
     };
@@ -57,38 +51,47 @@ const LeafletMap = ({ start, end, setRouteLoading }: LeafMapProps) => {
 
   const center = start || DEFAULT_CENTER;
 
-  console.log({ center });
-
   return (
-    <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }}>
-      <TileLayer
-        attribution="&copy; OpenStreetMap contributors"
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+    <Box sx={{ height: "100%", width: "100%", position: "relative" }}>
+      <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }}>
+        <TileLayer
+          attribution="&copy; OpenStreetMap contributors"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
 
-      {/* 🔁 Auto recenter */}
-      <RecenterMap center={center} />
+        <RecenterMap center={center} />
 
-      {/* 📍 Markers */}
-      {start && <Marker position={start} />}
-      {end && <Marker position={end} />}
+        {start && <Marker position={start} />}
+        {end && <Marker position={end} />}
 
-      {/* 🛣️ Route */}
-      {routes.map((route, index) => {
-        const colors = ["#007AFF", "#A020F0", "#FF3B30"];
-        return (
-          <Polyline
-            key={index}
-            positions={route}
-            pathOptions={{
-              color: colors[index] || "#666",
-              weight: index === 0 ? 6 : 4,
-              opacity: index === 0 ? 1 : 0.85
-            }}
-          />
-        );
-      })}
-    </MapContainer>
+        {routes.map((route, index) => {
+          const latlngs = route.geometry.coordinates.map((c) => [c[1], c[0]] as [number, number]);
+          const isSelected = selectedRouteIndex === index;
+
+          return (
+            <Polyline
+              key={index}
+              positions={latlngs}
+              eventHandlers={{
+                click: () => {
+                  setSelectedRouteIndex(index);
+                }
+              }}
+              pathOptions={{
+                color: selectedRouteIndex === index ? colors[index] : colors[index] + "80",
+                weight: isSelected ? 6 : 4,
+                opacity: isSelected ? 1 : 0.8
+              }}
+            >
+              <Tooltip sticky>
+                🚗 {(route.duration / 60).toFixed(1)} min | 📏 {(route.distance / 1000).toFixed(2)}{" "}
+                km
+              </Tooltip>
+            </Polyline>
+          );
+        })}
+      </MapContainer>
+    </Box>
   );
 };
 
