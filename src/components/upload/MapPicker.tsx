@@ -1,10 +1,11 @@
 "use client";
 
 import "@/components/map/leafletFix";
-import "leaflet/dist/leaflet.css";
 import type { MapLocation } from "@/types/common.types";
 import { Box } from "@mui/material";
-import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import { useEffect } from "react";
+import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
 
 export type { MapLocation };
 
@@ -12,6 +13,15 @@ type MapPickerProps = {
   location: MapLocation | null;
   setLocation: (loc: MapLocation) => void;
 };
+
+function RecenterOnLocation({ location }: { location: MapLocation | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!location) return;
+    map.setView([location.lat, location.lng], map.getZoom());
+  }, [location?.lat, location?.lng, map]);
+  return null;
+}
 
 export default function MapPicker({ location, setLocation }: MapPickerProps) {
   function LocationPicker() {
@@ -42,6 +52,7 @@ export default function MapPicker({ location, setLocation }: MapPickerProps) {
     >
       <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <RecenterOnLocation location={location} />
         <LocationPicker />
       </MapContainer>
     </Box>
