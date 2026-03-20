@@ -21,7 +21,7 @@ const RecenterMap = ({ center }: { center: [number, number] }) => {
   return null;
 };
 
-const LeafletMap = ({ start, end }: LeafMapProps) => {
+const LeafletMap = ({ start, end, setRouteLoading }: LeafMapProps) => {
   const [routes, setRoutes] = useState<[number, number][][]>([]);
 
   // 🛣️ Fetch route ONLY when both start & end exist
@@ -33,6 +33,7 @@ const LeafletMap = ({ start, end }: LeafMapProps) => {
       }
 
       try {
+        setRouteLoading(true);
         const routeData = await getRoute(start, end);
 
         // take top 3 routes
@@ -43,9 +44,11 @@ const LeafletMap = ({ start, end }: LeafMapProps) => {
           );
 
         setRoutes(topRoutes);
+        setRouteLoading(false);
       } catch (err) {
         console.error("Route error:", err);
         setRoutes([]);
+        setRouteLoading(false);
       }
     };
 

@@ -8,6 +8,7 @@ export interface User {
 export type LeafMapProps = {
   start: [number, number] | null;
   end: [number, number] | null;
+  setRouteLoading: (loading: boolean) => void;
 };
 
 export type LocationOption = {

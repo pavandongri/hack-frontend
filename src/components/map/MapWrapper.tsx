@@ -71,18 +71,12 @@ export default function MapWrapper() {
 
   // 🔍 Handle search (ONLY updates after backend route is ready)
   const handleSearch = async (s: [number, number], e: [number, number]) => {
-    setRouteLoading(true);
-
     try {
-      // simulate backend delay (replace with real API)
-      await new Promise((res) => setTimeout(res, 1500));
-
       setStart(s);
       setEnd(e);
     } catch (err) {
       console.error(err);
     } finally {
-      setRouteLoading(false);
     }
   };
 
@@ -160,7 +154,7 @@ export default function MapWrapper() {
           </Box>
         )}
 
-        <LeafletMap start={start} end={end} />
+        <LeafletMap start={start} end={end} setRouteLoading={setRouteLoading} />
       </Box>
     </Box>
   );
