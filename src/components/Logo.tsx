@@ -28,7 +28,7 @@ export default function Logo() {
         }}
       >
         <Image
-          src="/logo.png"
+          src="/logo.svg"
           alt=""
           width={48}
           height={48}

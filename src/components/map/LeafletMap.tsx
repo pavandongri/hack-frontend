@@ -86,7 +86,7 @@ const LeafletMap = ({ start, end, setRouteLoading }: LeafMapProps) => {
                 opacity: isSelected ? 1 : 0.8
               }}
             >
-              <Tooltip sticky>
+              <Tooltip sticky direction="top">
                 🚗 {(route.duration / 60).toFixed(1)} min | 📏 {(route.distance / 1000).toFixed(2)}{" "}
                 km
               </Tooltip>

@@ -1,7 +1,18 @@
 "use client";
 
 import LocationSearch from "@/components/search/LocationSearch";
-import { Box, Button, CircularProgress, Typography } from "@mui/material";
+import ExploreOutlinedIcon from "@mui/icons-material/ExploreOutlined";
+import {
+  alpha,
+  Box,
+  Button,
+  Card,
+  CircularProgress,
+  LinearProgress,
+  Stack,
+  Typography
+} from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
@@ -10,6 +21,7 @@ const LeafletMap = dynamic(() => import("./LeafletMap"), {
 });
 
 export default function MapWrapper() {
+  const theme = useTheme();
   const [start, setStart] = useState<[number, number] | null>(null);
   const [end, setEnd] = useState<[number, number] | null>(null);
 
@@ -17,7 +29,6 @@ export default function MapWrapper() {
   const [loadingLocation, setLoadingLocation] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // watchPosition: first fix is often coarse (IP/cell → e.g. regional city); later updates can move the pin to you.
   useEffect(() => {
     if (!navigator.geolocation) {
       setErrorMsg("Geolocation not supported");
@@ -50,7 +61,6 @@ export default function MapWrapper() {
     };
   }, []);
 
-  // 🔁 Retry location
   const retryLocation = () => {
     setLoadingLocation(true);
     setErrorMsg("");
@@ -74,7 +84,6 @@ export default function MapWrapper() {
     );
   };
 
-  // 🔍 Handle search (ONLY updates after backend route is ready)
   const handleSearch = async (s: [number, number], e: [number, number]) => {
     try {
       setStart(s);
@@ -86,81 +95,186 @@ export default function MapWrapper() {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
-      <LocationSearch onSearch={handleSearch} loading={routeLoading} />
-
-      <Box
-        sx={{
-          height: "60vh",
-          width: "100%",
-          borderRadius: 1.5,
-          overflow: "hidden",
-          position: "relative",
-          boxShadow: 3
-        }}
-      >
-        {/* 🔄 Loading user location */}
-        {loadingLocation && (
+    <Box
+      sx={{
+        minHeight: "100%",
+        pb: 2,
+        mx: { xs: -2, sm: -3 },
+        mt: { xs: -2, sm: -3 },
+        px: { xs: 2, sm: 3 },
+        pt: { xs: 2, sm: 3 },
+        background:
+          theme.palette.mode === "light"
+            ? `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.06)} 0%, ${theme.palette.background.default} 280px)`
+            : undefined
+      }}
+    >
+      <Stack spacing={3} sx={{ maxWidth: 1280, mx: "auto" }}>
+        <Box
+          sx={{
+            position: "relative",
+            overflow: "hidden",
+            borderRadius: { xs: 2, sm: 3 },
+            background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${alpha("#1e3a5f", 0.95)} 42%, ${alpha(theme.palette.secondary.dark, 0.88)} 100%)`,
+            color: "common.white",
+            px: { xs: 2.5, sm: 3.5 },
+            py: { xs: 2.5, sm: 3 },
+            boxShadow: "0 20px 40px rgba(15, 23, 42, 0.28)"
+          }}
+        >
           <Box
             sx={{
               position: "absolute",
-              inset: 0,
-              zIndex: 1000,
-              bgcolor: "rgba(255,255,255,0.7)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center"
+              top: -40,
+              right: -20,
+              width: 200,
+              height: 200,
+              borderRadius: "50%",
+              background: alpha("#fff", 0.06),
+              pointerEvents: "none"
             }}
-          >
-            <CircularProgress />
-            <Typography mt={1}>Getting your location...</Typography>
-          </Box>
-        )}
+          />
+          <Stack direction="row" alignItems="center" spacing={1.75} sx={{ position: "relative" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 40,
+                height: 40,
+                borderRadius: 2.5,
+                bgcolor: alpha("#fff", 0.14),
+                flexShrink: 0
+              }}
+            >
+              <ExploreOutlinedIcon sx={{ fontSize: 22, opacity: 0.95 }} />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography
+                variant="h6"
+                component="h1"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: { xs: "1.125rem", sm: "1.28rem" },
+                  letterSpacing: "0.01em",
+                  lineHeight: 1.35
+                }}
+              >
+                Maps
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  mt: 0.65,
+                  color: alpha("#fff", 0.88),
+                  maxWidth: 560,
+                  lineHeight: 1.55,
+                  fontSize: { xs: "0.8125rem", sm: "0.875rem" }
+                }}
+              >
+                Search a start and destination to see up to three route options. Your position is
+                used as the default starting point when location access is allowed.
+              </Typography>
+            </Box>
+          </Stack>
+        </Box>
 
-        {/* ❌ Error */}
-        {!loadingLocation && errorMsg && (
+        <LocationSearch onSearch={handleSearch} loading={routeLoading} />
+
+        <Card
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            overflow: "hidden",
+            position: "relative",
+            border: "1px solid",
+            borderColor: alpha(theme.palette.divider, 0.9),
+            boxShadow: "0 4px 24px rgba(0, 0, 0, 0.06)"
+          }}
+        >
+          {routeLoading && (
+            <LinearProgress
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 1001,
+                height: 3,
+                borderRadius: 0
+              }}
+            />
+          )}
+
           <Box
             sx={{
-              position: "absolute",
-              inset: 0,
-              zIndex: 1000,
-              bgcolor: "rgba(255,255,255,0.9)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center"
+              height: { xs: "min(56vh, 420px)", sm: "min(62vh, 560px)" },
+              width: "100%",
+              minHeight: 320,
+              position: "relative"
             }}
           >
-            <Typography color="error" mb={2}>
-              {errorMsg}
-            </Typography>
+            {loadingLocation && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 1000,
+                  backdropFilter: "blur(8px)",
+                  bgcolor: alpha(theme.palette.background.paper, 0.75),
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 1.5
+                }}
+              >
+                <CircularProgress size={40} thickness={4} />
+                <Typography variant="body2" color="text.secondary">
+                  Getting your location…
+                </Typography>
+              </Box>
+            )}
 
-            <Button variant="contained" onClick={retryLocation}>
-              Retry
-            </Button>
+            {!loadingLocation && errorMsg && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 1000,
+                  backdropFilter: "blur(6px)",
+                  bgcolor: alpha(theme.palette.background.paper, 0.92),
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  px: 3,
+                  textAlign: "center",
+                  gap: 2
+                }}
+              >
+                <Typography color="error" variant="body1">
+                  {errorMsg}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 360 }}>
+                  Allow location in your browser settings, or continue by choosing both points in
+                  the search bar above.
+                </Typography>
+                <Button variant="contained" size="medium" onClick={retryLocation}>
+                  Try again
+                </Button>
+              </Box>
+            )}
+
+            <LeafletMap start={start} end={end} setRouteLoading={setRouteLoading} />
           </Box>
-        )}
+        </Card>
 
-        {/* 🔄 Route loading */}
-        {routeLoading && (
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              zIndex: 999,
-              bgcolor: "rgba(255,255,255,0.6)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        )}
-
-        <LeafletMap start={start} end={end} setRouteLoading={setRouteLoading} />
-      </Box>
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", px: 0.5 }}>
+          Click a route line to highlight it. Tooltips show duration and distance. Map data ©
+          OpenStreetMap contributors.
+        </Typography>
+      </Stack>
     </Box>
   );
 }
