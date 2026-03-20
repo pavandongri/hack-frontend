@@ -23,7 +23,7 @@ const menuItems = [
   { text: "Dashboard", icon: DashboardIcon, href: "/dashboard" },
   { text: "Profile", icon: PersonIcon, href: "/profile" },
   { text: "Maps", icon: MapIcon, href: "/maps" },
-  { text: "Upload", icon: Upload, href: "/upload" }
+  { text: "Raise Issue", icon: Upload, href: "/raise-issue" }
 ] as const;
 
 function routeIsActive(pathname: string, href: string) {
