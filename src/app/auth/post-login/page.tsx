@@ -21,7 +21,7 @@ export default function PostLoginPage() {
 
       setUser(userProfile);
 
-      router.replace("/");
+      router.replace("/dashboard");
     }
   }, [user, isLoading, router]);
 
