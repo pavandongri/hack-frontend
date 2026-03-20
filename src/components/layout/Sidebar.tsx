@@ -4,6 +4,7 @@ import { Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar } fro
 
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import HomeIcon from "@mui/icons-material/Home";
+import MapIcon from "@mui/icons-material/Map"; // ✅ add this
 import PersonIcon from "@mui/icons-material/Person";
 
 import Link from "next/link";
@@ -13,7 +14,8 @@ const drawerWidth = 240;
 const menuItems = [
   { text: "Home", icon: <HomeIcon />, href: "/" },
   { text: "Profile", icon: <PersonIcon />, href: "/profile" },
-  { text: "Dashboard", icon: <DashboardIcon />, href: "/dashboard" }
+  { text: "Dashboard", icon: <DashboardIcon />, href: "/dashboard" },
+  { text: "Maps", icon: <MapIcon />, href: "/maps" }
 ];
 
 export default function Sidebar({
