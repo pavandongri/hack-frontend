@@ -98,7 +98,7 @@ export default function LocationSearch({ onSearch }: Props) {
         display: "flex",
         gap: 2,
         alignItems: "center",
-        borderRadius: 3
+        borderRadius: 1.5
       }}
     >
       {/* 🔹 Start */}

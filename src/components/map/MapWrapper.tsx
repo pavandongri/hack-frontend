@@ -92,9 +92,9 @@ export default function MapWrapper() {
 
       <Box
         sx={{
-          height: "500px",
+          height: "60vh",
           width: "100%",
-          borderRadius: 3,
+          borderRadius: 1.5,
           overflow: "hidden",
           position: "relative",
           boxShadow: 3

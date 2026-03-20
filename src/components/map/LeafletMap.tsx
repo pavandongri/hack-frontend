@@ -22,25 +22,30 @@ const RecenterMap = ({ center }: { center: [number, number] }) => {
 };
 
 const LeafletMap = ({ start, end }: LeafMapProps) => {
-  const [route, setRoute] = useState<[number, number][]>([]);
+  const [routes, setRoutes] = useState<[number, number][][]>([]);
 
   // 🛣️ Fetch route ONLY when both start & end exist
   useEffect(() => {
     const fetchRoute = async () => {
       if (!start || !end) {
-        setRoute([]); // clear old route
+        setRoutes([]);
         return;
       }
 
       try {
-        const coords = await getRoute(start, end);
+        const routeData = await getRoute(start, end);
 
-        const formatted = coords.map((coord: [number, number]) => [coord[1], coord[0]]);
+        // take top 3 routes
+        const topRoutes = routeData
+          ?.slice(0, 3)
+          ?.map((route: any) =>
+            route.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]])
+          );
 
-        setRoute(formatted);
+        setRoutes(topRoutes);
       } catch (err) {
         console.error("Route error:", err);
-        setRoute([]);
+        setRoutes([]);
       }
     };
 
@@ -52,7 +57,7 @@ const LeafletMap = ({ start, end }: LeafMapProps) => {
   console.log({ center });
 
   return (
-    <MapContainer center={center} zoom={13} style={{ height: "500px", width: "100%" }}>
+    <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }}>
       <TileLayer
         attribution="&copy; OpenStreetMap contributors"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -66,7 +71,20 @@ const LeafletMap = ({ start, end }: LeafMapProps) => {
       {end && <Marker position={end} />}
 
       {/* 🛣️ Route */}
-      {route.length > 0 && <Polyline positions={route} />}
+      {routes.map((route, index) => {
+        const colors = ["#007AFF", "#A020F0", "#FF3B30"];
+        return (
+          <Polyline
+            key={index}
+            positions={route}
+            pathOptions={{
+              color: colors[index] || "#666",
+              weight: index === 0 ? 6 : 4,
+              opacity: index === 0 ? 1 : 0.85
+            }}
+          />
+        );
+      })}
     </MapContainer>
   );
 };
