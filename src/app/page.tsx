@@ -1,11 +1,5 @@
-import { Box, Typography } from "@mui/material";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Home Page
-      </Typography>
-    </Box>
-  );
+export default function RootPage() {
+  redirect("/dashboard");
 }

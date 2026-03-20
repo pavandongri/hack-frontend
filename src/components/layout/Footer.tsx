@@ -1,5 +1,6 @@
 "use client";
 
+import { APP_NAME } from "@/config/brand";
 import { Box, Typography } from "@mui/material";
 
 export default function Footer() {
@@ -12,7 +13,9 @@ export default function Footer() {
         textAlign: "center"
       }}
     >
-      <Typography variant="body2">© {new Date().getFullYear()} MyApp</Typography>
+      <Typography variant="body2">
+        © {new Date().getFullYear()} {APP_NAME}
+      </Typography>
     </Box>
   );
 }
