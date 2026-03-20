@@ -51,5 +51,33 @@ export const apiClient = {
     }
 
     return res.json();
+  },
+
+  postForm: async <T>(endpoint: string, formData: FormData): Promise<T> => {
+    const url = buildUrl(endpoint);
+
+    const res = await fetch(url, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!res.ok) {
+      let message = `API Error: ${res.status}`;
+      try {
+        const err = await res.json();
+        if (typeof err?.message === "string") message = err.message;
+        else if (typeof err?.error === "string") message = err.error;
+      } catch {
+        /* ignore */
+      }
+      throw new Error(message);
+    }
+
+    const contentType = res.headers.get("content-type");
+    if (contentType?.includes("application/json")) {
+      return res.json();
+    }
+
+    return {} as T;
   }
 };

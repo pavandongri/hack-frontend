@@ -8,15 +8,17 @@ import { useEffect, useState } from "react";
 import { MapContainer, Marker, Polyline, TileLayer, Tooltip, useMap } from "react-leaflet";
 import "./leafletFix";
 
-const DEFAULT_CENTER: [number, number] = [17.385044, 78.486671];
+const DEFAULT_CENTER: [number, number] = [22.5, 79.5];
+const DEFAULT_ZOOM = 5;
+const LOCATED_ZOOM = 13;
 const colors = ["#007AFF", "#A020F0", "#61f2a0ff"];
 
-const RecenterMap = ({ center }: { center: [number, number] }) => {
+const RecenterMap = ({ center, zoom }: { center: [number, number]; zoom: number }) => {
   const map = useMap();
 
   useEffect(() => {
-    map.setView(center);
-  }, [center, map]);
+    map.setView(center, zoom);
+  }, [center, map, zoom]);
 
   return null;
 };
@@ -49,17 +51,18 @@ const LeafletMap = ({ start, end, setRouteLoading }: LeafMapProps) => {
     fetchRoute();
   }, [start, end]);
 
-  const center = start || DEFAULT_CENTER;
+  const center = start ?? DEFAULT_CENTER;
+  const zoom = start ? LOCATED_ZOOM : DEFAULT_ZOOM;
 
   return (
     <Box sx={{ height: "100%", width: "100%", position: "relative" }}>
-      <MapContainer center={center} zoom={13} style={{ height: "100%", width: "100%" }}>
+      <MapContainer center={center} zoom={zoom} style={{ height: "100%", width: "100%" }}>
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <RecenterMap center={center} />
+        <RecenterMap center={center} zoom={zoom} />
 
         {start && <Marker position={start} />}
         {end && <Marker position={end} />}

@@ -17,7 +17,7 @@ export default function MapWrapper() {
   const [loadingLocation, setLoadingLocation] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // 📍 Get user location on load
+  // watchPosition: first fix is often coarse (IP/cell → e.g. regional city); later updates can move the pin to you.
   useEffect(() => {
     if (!navigator.geolocation) {
       setErrorMsg("Geolocation not supported");
@@ -25,10 +25,13 @@ export default function MapWrapper() {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+    const stopTimer = setTimeout(() => {
+      navigator.geolocation.clearWatch(watchId);
+    }, 25000);
+
+    const watchId = navigator.geolocation.watchPosition(
       (position) => {
         const coords: [number, number] = [position.coords.latitude, position.coords.longitude];
-
         setStart(coords);
         setLoadingLocation(false);
       },
@@ -36,13 +39,15 @@ export default function MapWrapper() {
         console.error("Geolocation error:", error);
         setErrorMsg(error.message || "Failed to get location");
         setLoadingLocation(false);
+        navigator.geolocation.clearWatch(watchId);
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
     );
+
+    return () => {
+      clearTimeout(stopTimer);
+      navigator.geolocation.clearWatch(watchId);
+    };
   }, []);
 
   // 🔁 Retry location
@@ -63,7 +68,7 @@ export default function MapWrapper() {
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 20000,
         maximumAge: 0
       }
     );
