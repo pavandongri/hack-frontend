@@ -117,7 +117,7 @@ export default function LocationSearch({ onSearch, loading }: Props) {
       elevation={0}
       sx={{
         p: { xs: 2, sm: 2.5 },
-        borderRadius: 3,
+        borderRadius: 2,
         border: "1px solid",
         borderColor: alpha(theme.palette.divider, 0.9),
         background:

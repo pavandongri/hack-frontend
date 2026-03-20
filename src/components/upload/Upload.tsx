@@ -5,6 +5,7 @@ import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
+import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
 import {
   Alert,
   Box,
@@ -72,12 +73,16 @@ export default function Upload() {
   };
 
   const getCurrentLocation = () => {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      setLocation({
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude
-      });
-    });
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude
+        });
+      },
+      undefined,
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+    );
   };
 
   const handleSubmit = async () => {
@@ -117,30 +122,102 @@ export default function Upload() {
       }}
     >
       <Stack spacing={3}>
-        <Box>
-          <Chip
-            label="Road safety"
-            size="small"
+        <Box
+          sx={{
+            borderRadius: 2,
+            border: "1px solid",
+            borderColor: (t) => alpha(t.palette.divider, 0.85),
+            overflow: "hidden",
+            bgcolor: "background.paper",
+            boxShadow: (t) => `0 1px 2px ${alpha(t.palette.common.black, 0.04)}`
+          }}
+        >
+          <Box
             sx={{
-              mb: 1.5,
-              fontWeight: 600,
-              bgcolor: (t) => alpha(t.palette.primary.main, 0.12),
-              color: "primary.main",
-              border: "none"
+              height: 3,
+              background: (t) =>
+                `linear-gradient(90deg, ${t.palette.primary.main} 0%, ${alpha(
+                  t.palette.primary.main,
+                  0.45
+                )} 55%, ${alpha(t.palette.secondary.main, 0.35)} 100%)`
             }}
           />
-          <Typography
-            variant="h4"
-            component="h1"
-            fontWeight={700}
-            letterSpacing="-0.02em"
-            gutterBottom
+          <Box
+            sx={{
+              p: { xs: 2.5, sm: 3 },
+              background: (t) =>
+                `linear-gradient(145deg, ${alpha(t.palette.primary.main, 0.07)} 0%, ${alpha(
+                  t.palette.background.paper,
+                  1
+                )} 38%, ${alpha(t.palette.primary.main, 0.03)} 100%)`
+            }}
           >
-            Report a road issue
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 520 }}>
-            Add clear photos and drop a pin so crews can find the spot quickly.
-          </Typography>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={{ xs: 2, sm: 2.5 }}
+              alignItems={{ xs: "center", sm: "flex-start" }}
+            >
+              <Box
+                sx={{
+                  flexShrink: 0,
+                  width: { xs: 52, sm: 56 },
+                  height: { xs: 52, sm: 56 },
+                  borderRadius: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: (t) => alpha(t.palette.primary.main, 0.12),
+                  color: "primary.main",
+                  border: (t) => `1px solid ${alpha(t.palette.primary.main, 0.2)}`
+                }}
+              >
+                <CloudUploadRoundedIcon sx={{ fontSize: { xs: 26, sm: 28 } }} />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0, textAlign: { xs: "center", sm: "left" } }}>
+                <Chip
+                  icon={
+                    <ReportProblemOutlinedIcon
+                      sx={{ fontSize: 18, color: (t) => `${t.palette.primary.main} !important` }}
+                    />
+                  }
+                  label="Road safety"
+                  size="small"
+                  sx={{
+                    mb: 1.25,
+                    fontWeight: 600,
+                    bgcolor: (t) => alpha(t.palette.primary.main, 0.1),
+                    color: "primary.main",
+                    border: (t) => `1px solid ${alpha(t.palette.primary.main, 0.22)}`
+                  }}
+                />
+                <Typography
+                  variant="h3"
+                  component="h1"
+                  fontWeight={800}
+                  letterSpacing={{ xs: -0.5, sm: -0.75 }}
+                  sx={{
+                    fontSize: { xs: "1.65rem", sm: "1.85rem", md: "2.1rem" },
+                    lineHeight: 1.2,
+                    mb: 1,
+                    color: "text.primary"
+                  }}
+                >
+                  Report a road issue
+                </Typography>
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{
+                    maxWidth: 560,
+                    mx: { xs: "auto", sm: 0 },
+                    lineHeight: 1.65
+                  }}
+                >
+                  Add clear photos and drop a pin so crews can find the spot quickly.
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
         </Box>
 
         <Card

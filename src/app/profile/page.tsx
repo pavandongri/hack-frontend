@@ -85,7 +85,7 @@ export default function ProfilePage() {
         sx={{
           position: "relative",
           overflow: "hidden",
-          borderRadius: { xs: 0, sm: 3 },
+          borderRadius: { xs: 0, sm: 2 },
           mx: { xs: -2, sm: 0 },
           mb: 3,
           background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${alpha("#312e81", 0.95)} 45%, ${alpha(theme.palette.secondary.dark, 0.92)} 100%)`,
@@ -195,7 +195,7 @@ export default function ProfilePage() {
           sx={{
             mt: { xs: -9, md: -10 },
             position: "relative",
-            borderRadius: 3,
+            borderRadius: 2,
             border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
             background:
               theme.palette.mode === "light"
@@ -238,7 +238,7 @@ export default function ProfilePage() {
                     variant="outlined"
                     sx={{
                       p: 2.5,
-                      borderRadius: 2.5,
+                      borderRadius: 2,
                       borderColor: alpha(theme.palette.divider, 0.14),
                       bgcolor: alpha(theme.palette.background.paper, 0.85),
                       transition: "transform 0.2s ease, box-shadow 0.2s ease",
@@ -303,10 +303,10 @@ export default function ProfilePage() {
                 value={94}
                 sx={{
                   height: 10,
-                  borderRadius: 5,
+                  borderRadius: 2,
                   bgcolor: alpha(theme.palette.primary.main, 0.12),
                   "& .MuiLinearProgress-bar": {
-                    borderRadius: 5,
+                    borderRadius: 2,
                     background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
                   }
                 }}

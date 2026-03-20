@@ -140,7 +140,7 @@ export default function Dashboard() {
         sx={{
           position: "relative",
           overflow: "hidden",
-          borderRadius: { xs: 0, sm: 3 },
+          borderRadius: { xs: 0, sm: 2 },
           mb: 3,
           background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${alpha("#0f172a", 0.96)} 42%, ${alpha(theme.palette.secondary.dark, 0.9)} 100%)`,
           color: "common.white",
@@ -401,7 +401,7 @@ export default function Dashboard() {
                       width: "100%",
                       height: `${Math.max(12, (d.pct / maxBar) * 100)}%`,
                       minHeight: 16,
-                      borderRadius: 1.5,
+                      borderRadius: 2,
                       background: `linear-gradient(180deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.dark} 100%)`,
                       boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.25)}`,
                       transition: "transform 0.2s ease",
@@ -459,10 +459,10 @@ export default function Dashboard() {
                       value={h.pct}
                       sx={{
                         height: 8,
-                        borderRadius: 4,
+                        borderRadius: 2,
                         bgcolor: alpha(h.color, 0.12),
                         "& .MuiLinearProgress-bar": {
-                          borderRadius: 4,
+                          borderRadius: 2,
                           background: `linear-gradient(90deg, ${h.color}, ${alpha(h.color, 0.65)})`
                         }
                       }}
@@ -502,10 +502,10 @@ export default function Dashboard() {
                     value={78}
                     sx={{
                       height: 10,
-                      borderRadius: 5,
+                      borderRadius: 2,
                       bgcolor: alpha(theme.palette.success.main, 0.15),
                       "& .MuiLinearProgress-bar": {
-                        borderRadius: 5,
+                        borderRadius: 2,
                         bgcolor: theme.palette.success.main
                       }
                     }}
@@ -525,10 +525,10 @@ export default function Dashboard() {
                     value={22}
                     sx={{
                       height: 10,
-                      borderRadius: 5,
+                      borderRadius: 2,
                       bgcolor: alpha(theme.palette.warning.main, 0.15),
                       "& .MuiLinearProgress-bar": {
-                        borderRadius: 5,
+                        borderRadius: 2,
                         bgcolor: theme.palette.warning.main
                       }
                     }}

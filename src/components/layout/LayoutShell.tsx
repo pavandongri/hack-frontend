@@ -5,9 +5,7 @@ import { useState } from "react";
 
 import Footer from "./Footer";
 import Navbar from "./Navbar";
-import Sidebar from "./Sidebar";
-
-const drawerWidth = 240;
+import Sidebar, { drawerWidth } from "./Sidebar";
 
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
