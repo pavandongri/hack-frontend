@@ -1,0 +1,13 @@
+---
+description: TypeScript, React, and Next.js App Router patterns for this repo
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# TypeScript and React
+
+- Add `"use client"` only where client APIs are used (hooks, browser APIs, event handlers, Leaflet, Auth0 client helpers).
+- **API calls**: Prefer `src/utils/api-client.util.ts` and `src/services/*` over ad hoc `fetch`. Use `API_ENDPOINTS` from `src/constants/api.constants.ts` for paths.
+- **Config**: Base URL and Auth0 audience come from `src/config/api.ts` (`getApiBaseUrl`, `getAuth0ApiAudience`). Do not hardcode production URLs.
+- **Errors**: Throw or surface `ApiError` from the API client where appropriate; avoid empty `catch` blocks.
+- **UI**: Use MUI components and patterns consistent with existing components under `src/components/`.

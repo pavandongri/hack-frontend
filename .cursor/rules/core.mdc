@@ -1,0 +1,12 @@
+---
+description: Project identity, stack, and universal conventions for hack-frontend
+alwaysApply: true
+---
+
+# SurakshaPath AI — core conventions
+
+- **Stack**: Next.js 16 (App Router), React 19, TypeScript, MUI, Auth0 (`@auth0/nextjs-auth0`), Leaflet / react-leaflet.
+- **Imports**: Use the `@/` path alias consistently with existing files.
+- **Changes**: Keep edits scoped to the task; match naming, structure, and patterns already in the repo. Do not refactor unrelated code or add docs the user did not ask for.
+- **Environment**: Never create, edit, or delete `.env` or `.env.*` files. If new configuration is needed, describe variables in `README.md` or in code comments only.
+- **Quality**: Prefer types from existing `src/types/`; run `npm run lint` after substantive edits when practical.

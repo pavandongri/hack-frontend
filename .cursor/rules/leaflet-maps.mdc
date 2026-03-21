@@ -1,0 +1,10 @@
+---
+description: Leaflet maps and SSR-safe patterns in map components
+globs: "**/components/map/**/*.{tsx,ts}"
+alwaysApply: false
+---
+
+# Maps (Leaflet)
+
+- Follow patterns in `MapWrapper`, `LeafletMap`, and `leafletFix.ts` when changing map behavior.
+- Avoid importing Leaflet on the server unless the existing pattern already does; respect client-only boundaries so SSR does not touch `window` or Leaflet globals.
