@@ -3,6 +3,7 @@
 import { getApiBaseUrl, getAuth0ApiAudience } from "@/config/api";
 import { API_ENDPOINTS } from "@/constants/api.constants";
 import { getAccessToken } from "@auth0/nextjs-auth0/client";
+import { AccessTokenError } from "@auth0/nextjs-auth0/errors";
 
 export class ApiError extends Error {
   constructor(
@@ -62,13 +63,89 @@ function normalizeAccessToken(token: string): string {
   return trimmed;
 }
 
-async function getAccessTokenForApi(): Promise<string> {
-  const audience = getAuth0ApiAudience();
-  const raw = await getAccessToken({ audience });
-  if (!raw || typeof raw !== "string") {
-    throw new Error("Missing access token. Sign in again.");
+/** Refresh this many seconds before `expires_at` so we do not send a nearly-expired JWT. */
+const ACCESS_TOKEN_EXPIRY_BUFFER_SEC = 60;
+
+type CachedAccessToken = {
+  token: string;
+  /** Unix seconds (JWT `exp` / Auth0 `expires_at`). */
+  expiresAtSec: number;
+};
+
+let cachedAccessToken: CachedAccessToken | null = null;
+let accessTokenFetchInFlight: Promise<string> | null = null;
+
+function clearAccessTokenCache(): void {
+  cachedAccessToken = null;
+}
+
+function isAccessTokenStillValid(expiresAtSec: number): boolean {
+  const nowSec = Math.floor(Date.now() / 1000);
+  return expiresAtSec - ACCESS_TOKEN_EXPIRY_BUFFER_SEC > nowSec;
+}
+
+function decodeJwtExpSeconds(jwt: string): number | undefined {
+  const parts = jwt.split(".");
+  if (parts.length < 2) return undefined;
+  const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+  const padded = b64.padEnd(b64.length + ((4 - (b64.length % 4)) % 4), "=");
+  try {
+    const payload = JSON.parse(atob(padded)) as { exp?: number };
+    return typeof payload.exp === "number" ? payload.exp : undefined;
+  } catch {
+    return undefined;
   }
-  return normalizeAccessToken(raw);
+}
+
+function redirectToLogin(): void {
+  if (typeof window === "undefined") return;
+  const returnTo = `${window.location.pathname}${window.location.search}`;
+  window.location.assign(`/auth/login?returnTo=${encodeURIComponent(returnTo)}`);
+}
+
+async function fetchAccessTokenFromAuthRoute(): Promise<CachedAccessToken> {
+  const audience = getAuth0ApiAudience();
+  const raw = await getAccessToken({
+    audience,
+    includeFullResponse: true
+  });
+  const token = normalizeAccessToken(raw.token);
+  let expiresAtSec = typeof raw.expires_at === "number" && raw.expires_at > 0 ? raw.expires_at : 0;
+  if (!expiresAtSec) {
+    const fromJwt = decodeJwtExpSeconds(token);
+    if (fromJwt) expiresAtSec = fromJwt;
+  }
+  if (!expiresAtSec) {
+    expiresAtSec = Math.floor(Date.now() / 1000) + 300;
+  }
+  return { token, expiresAtSec };
+}
+
+async function getAccessTokenForApi(): Promise<string> {
+  if (cachedAccessToken && isAccessTokenStillValid(cachedAccessToken.expiresAtSec)) {
+    return cachedAccessToken.token;
+  }
+
+  if (accessTokenFetchInFlight) {
+    return accessTokenFetchInFlight;
+  }
+
+  accessTokenFetchInFlight = (async () => {
+    try {
+      const entry = await fetchAccessTokenFromAuthRoute();
+      cachedAccessToken = entry;
+      return entry.token;
+    } catch (e) {
+      if (e instanceof AccessTokenError) {
+        redirectToLogin();
+      }
+      throw e;
+    } finally {
+      accessTokenFetchInFlight = null;
+    }
+  })();
+
+  return accessTokenFetchInFlight;
 }
 
 async function parseBody(res: Response): Promise<unknown> {
@@ -119,8 +196,12 @@ async function fetchWithAuth(url: string, init: RequestInit): Promise<Response> 
 
   let res = await run();
   if (res.status === 401) {
-    await getAccessToken({ audience: getAuth0ApiAudience() });
+    clearAccessTokenCache();
     res = await run();
+  }
+  if (res.status === 401) {
+    redirectToLogin();
+    throw new Error("Session expired. Redirecting to login.");
   }
   return res;
 }
