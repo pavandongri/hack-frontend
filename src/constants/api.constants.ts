@@ -1,4 +1,6 @@
 export const API_ENDPOINTS = {
+  /** GET — no `Authorization` header; liveness only. */
+  HEALTH: "health",
   SEARCH_LOCATION: "maps/search/location",
   SUBMIT_REPORT: "maps/report-hazard",
   /** GET query: sourceLat, sourceLng, destLat, destLng → wrapped { data: r1, r2, … } hazards */
