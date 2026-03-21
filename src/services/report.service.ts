@@ -18,8 +18,8 @@ export async function submitReport(
     formData.append("images", file);
   }
 
-  formData.append("lat", String(location.lat));
-  formData.append("lng", String(location.lng));
+  formData.append("latitude", String(location.lat));
+  formData.append("longitude", String(location.lng));
 
   return apiClient.postForm<SubmitReportResult>(API_ENDPOINTS.SUBMIT_REPORT, formData);
 }

@@ -1,14 +1,21 @@
 "use client";
 
 import LocationSearch from "@/components/search/LocationSearch";
+import { getRoute } from "@/helpers/route.helpers";
+import { fetchBestRouteFromAI } from "@/services/route-ai.service";
+import { fetchRouteHazards, flattenRouteHazards } from "@/services/route-hazards.service";
+import type { Coordinates, RouteHazardsResponse, RouteType } from "@/types/common.types";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import ExploreOutlinedIcon from "@mui/icons-material/ExploreOutlined";
 import {
+  Alert,
   alpha,
   Box,
   Button,
   Card,
   CircularProgress,
   LinearProgress,
+  Paper,
   Stack,
   Typography
 } from "@mui/material";
@@ -31,9 +38,17 @@ export default function MapWrapper() {
   const [start, setStart] = useState<[number, number] | null>(null);
   const [end, setEnd] = useState<[number, number] | null>(null);
 
+  const [routes, setRoutes] = useState<RouteType[]>([]);
   const [routeLoading, setRouteLoading] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const [routeHazards, setRouteHazards] = useState<RouteHazardsResponse | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiLlmResult, setAiLlmResult] = useState<{ explanation: string } | null>(null);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -76,13 +91,67 @@ export default function MapWrapper() {
     );
   };
 
-  const handleSearch = async (s: [number, number], e: [number, number]) => {
+  const handleSearch = async (s: Coordinates, e: Coordinates) => {
+    setStart(s);
+    setEnd(e);
+    setRoutes([]);
+    setRouteHazards(null);
+    setSearchError(null);
+    setAiError(null);
+    setAiLlmResult(null);
+
+    setRouteLoading(true);
+
     try {
-      setStart(s);
-      setEnd(e);
-    } catch (err) {
-      console.error(err);
+      const [osrmResult, hazardsResult] = await Promise.allSettled([
+        getRoute(s, e),
+        fetchRouteHazards(s, e)
+      ]);
+
+      if (osrmResult.status === "fulfilled") {
+        const raw = osrmResult.value;
+        setRoutes((raw || []).slice(0, 3));
+      } else {
+        console.error("OSRM error:", osrmResult.reason);
+        setSearchError("Could not load routes from OSRM.");
+      }
+
+      if (hazardsResult.status === "fulfilled") {
+        setRouteHazards(hazardsResult.value);
+      } else {
+        console.error("Route hazards error:", hazardsResult.reason);
+        setSearchError((prev) =>
+          prev
+            ? `${prev} Could not load route hazards from the server.`
+            : "Could not load route hazards from the server."
+        );
+      }
     } finally {
+      setRouteLoading(false);
+    }
+  };
+
+  const routeReady = Boolean(start && end && !routeLoading);
+  const canUseAi = routeReady && routeHazards !== null;
+
+  const handleBestRouteFromAI = async () => {
+    if (!start || !end || !routeHazards) return;
+
+    setAiLoading(true);
+    setAiError(null);
+    setAiLlmResult(null);
+
+    try {
+      const res = await fetchBestRouteFromAI(routeHazards);
+      setAiLlmResult({
+        explanation: res.data?.explanation ?? ""
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Request failed";
+      setAiError(message);
+      console.error("AI route error:", err);
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -173,6 +242,74 @@ export default function MapWrapper() {
 
         <LocationSearch onSearch={handleSearch} loading={routeLoading} />
 
+        {searchError && (
+          <Alert severity="warning" onClose={() => setSearchError(null)}>
+            {searchError}
+          </Alert>
+        )}
+
+        {routeReady && routeHazards && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              border: "1px solid",
+              borderColor: alpha(theme.palette.divider, 0.9),
+              bgcolor: alpha(theme.palette.info.main, 0.06)
+            }}
+          >
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.75 }}>
+              Server route analysis
+            </Typography>
+            <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
+              {routeHazards.message || "—"}
+            </Typography>
+          </Paper>
+        )}
+
+        {routeReady && (
+          <Stack spacing={1.5}>
+            <Button
+              variant="contained"
+              color="secondary"
+              size="medium"
+              disabled={aiLoading || !canUseAi}
+              startIcon={
+                aiLoading ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : (
+                  <AutoAwesomeOutlinedIcon />
+                )
+              }
+              onClick={handleBestRouteFromAI}
+              sx={{ alignSelf: { xs: "stretch", sm: "flex-start" } }}
+            >
+              Get Best Route From AI
+            </Button>
+
+            {!canUseAi && routeReady && (
+              <Typography variant="caption" color="text.secondary">
+                Route hazards from the server are required before AI analysis. Fix any warnings
+                above or try again.
+              </Typography>
+            )}
+
+            {aiError && (
+              <Alert severity="error" onClose={() => setAiError(null)}>
+                {aiError}
+              </Alert>
+            )}
+            {aiLlmResult && (
+              <Alert severity="success" onClose={() => setAiLlmResult(null)}>
+                <Typography variant="body2" sx={{ lineHeight: 1.65, whiteSpace: "pre-wrap" }}>
+                  {aiLlmResult.explanation}
+                </Typography>
+              </Alert>
+            )}
+          </Stack>
+        )}
+
         <Card
           elevation={0}
           sx={{
@@ -258,7 +395,12 @@ export default function MapWrapper() {
               </Box>
             )}
 
-            <LeafletMap start={start} end={end} setRouteLoading={setRouteLoading} />
+            <LeafletMap
+              start={start}
+              end={end}
+              routes={routes}
+              hazardPoints={routeHazards ? flattenRouteHazards(routeHazards.data) : []}
+            />
           </Box>
         </Card>
 
